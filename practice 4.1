@@ -1,0 +1,90 @@
+const readline = require('readline');
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
+
+const employees = [];
+
+function showMenu() {
+  console.log('\nEmployee Management System');
+  console.log('1. Add Employee');
+  console.log('2. List Employees');
+  console.log('3. Remove Employee');
+  console.log('4. Exit');
+  rl.question('Choose an option (1-4): ', handleMenu);
+}
+
+function handleMenu(option) {
+  switch (option.trim()) {
+    case '1':
+      addEmployee();
+      break;
+    case '2':
+      listEmployees();
+      break;
+    case '3':
+      removeEmployee();
+      break;
+    case '4':
+      console.log('Exiting... Goodbye!');
+      rl.close();
+      break;
+    default:
+      console.log('Invalid option. Please try again.');
+      showMenu();
+  }
+}
+
+function addEmployee() {
+  rl.question('Enter Employee Name: ', (name) => {
+    if (!name.trim()) {
+      console.log('Name cannot be empty.');
+      return addEmployee();
+    }
+    rl.question('Enter Employee ID: ', (id) => {
+      if (!id.trim()) {
+        console.log('ID cannot be empty.');
+        return addEmployee();
+      }
+      // Check if ID already exists
+      if (employees.some(emp => emp.id === id.trim())) {
+        console.log(`Employee with ID ${id.trim()} already exists.`);
+        return showMenu();
+      }
+      employees.push({ name: name.trim(), id: id.trim() });
+      console.log(`Employee ${name.trim()} with ID ${id.trim()} added.`);
+      showMenu();
+    });
+  });
+}
+
+function listEmployees() {
+  if (employees.length === 0) {
+    console.log('No employees to display.');
+  } else {
+    console.log('\nEmployee List:');
+    employees.forEach((emp, index) => {
+      console.log(`${index + 1}. ID: ${emp.id}, Name: ${emp.name}`);
+    });
+  }
+  showMenu();
+}
+
+function removeEmployee() {
+  rl.question('Enter Employee ID to remove: ', (id) => {
+    const index = employees.findIndex(emp => emp.id === id.trim());
+    if (index === -1) {
+      console.log(`Employee with ID ${id.trim()} not found.`);
+    } else {
+      const removed = employees.splice(index, 1)[0];
+      console.log(`Employee ${removed.name} with ID ${removed.id} removed.`);
+    }
+    showMenu();
+  });
+}
+
+// Start the application
+showMenu();
+
