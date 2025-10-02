@@ -1,0 +1,85 @@
+const express = require('express');
+const app = express();
+
+app.use(express.json()); // Parse JSON bodies
+
+const PORT = 3000;
+
+// In-memory store for cards
+// Each card: { id: number, suit: string, value: string }
+let cards = [];
+let nextId = 1; // Auto-increment ID
+
+// Helper to validate card input
+function validateCard(card) {
+  const validSuits = ['Hearts', 'Diamonds', 'Clubs', 'Spades'];
+  const validValues = [
+    '2', '3', '4', '5', '6', '7', '8', '9', '10',
+    'Jack', 'Queen', 'King', 'Ace'
+  ];
+  if (
+    typeof card.suit !== 'string' ||
+    !validSuits.includes(card.suit)
+  ) return false;
+
+  if (
+    typeof card.value !== 'string' ||
+    !validValues.includes(card.value)
+  ) return false;
+
+  return true;
+}
+
+// GET /cards - list all cards
+app.get('/cards', (req, res) => {
+  res.json(cards);
+});
+
+// POST /cards - add a new card
+app.post('/cards', (req, res) => {
+  const card = req.body;
+
+  if (!validateCard(card)) {
+    return res.status(400).json({
+      error: "Invalid card data. Suit must be one of Hearts, Diamonds, Clubs, Spades. Value must be 2-10, Jack, Queen, King, Ace."
+    });
+  }
+
+  const newCard = {
+    id: nextId++,
+    suit: card.suit,
+    value: card.value
+  };
+
+  cards.push(newCard);
+  res.status(201).json(newCard);
+});
+
+// GET /cards/:id - get card by ID
+app.get('/cards/:id', (req, res) => {
+  const id = parseInt(req.params.id);
+  const card = cards.find(c => c.id === id);
+
+  if (!card) {
+    return res.status(404).json({ error: 'Card not found' });
+  }
+
+  res.json(card);
+});
+
+// DELETE /cards/:id - delete card by ID
+app.delete('/cards/:id', (req, res) => {
+  const id = parseInt(req.params.id);
+  const index = cards.findIndex(c => c.id === id);
+
+  if (index === -1) {
+    return res.status(404).json({ error: 'Card not found' });
+  }
+
+  const deletedCard = cards.splice(index, 1)[0];
+  res.json({ message: 'Card deleted', card: deletedCard });
+});
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`Card API
